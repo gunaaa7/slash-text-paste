@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>Slash-Prompt Expander</h1>
+      <p class="subtitle">Manage your text shortcuts</p>
+    </header>
+
+    <div class="add-section">
+      <div class="input-group">
+        <label for="alias-input">Alias</label>
+        <div class="alias-input-wrapper">
+          <span class="slash">/</span>
+          <input type="text" id="alias-input" placeholder="demo" maxlength="50">
+        </div>
+      </div>
+      
+      <div class="input-group">
+        <label for="text-input">Expansion Text</label>
+        <textarea id="text-input" placeholder="Enter the text to expand to..." rows="3"></textarea>
+      </div>
+      
+      <div class="button-group">
+        <button id="save-btn" class="btn btn-primary">Save Alias</button>
+        <button id="cancel-btn" class="btn btn-secondary" style="display: none;">Cancel</button>
+      </div>
+    </div>
+
+    <div class="aliases-section">
+      <h2>Saved Aliases</h2>
+      <div id="aliases-list" class="aliases-list">
+        <div class="loading">Loading aliases...</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../dist/popup.js"></script>
+</body>
+</html>
