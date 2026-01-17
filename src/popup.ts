@@ -91,6 +91,13 @@ class PopupManager {
         text,
       })
 
+      if (this.editingAlias && this.editingAlias !== alias) {
+        await chrome.runtime.sendMessage({
+          type: "DELETE_ALIAS",
+          alias: this.editingAlias,
+        })
+      }
+
       this.clearForm()
       this.loadAliases()
     } catch (error) {

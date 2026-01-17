@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Slash-Prompt Expander",
+  "name": "Slash-Text Paste",
   "version": "1.0.0",
   "description": "Expand /alias shortcuts to saved text snippets",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7spAsxc4820x6b8v1DwlLSfe+EqzVqgsR5zLrzL6mods6gExkzwmbsgL4Ke3wlEzGzzz+r88BhxVHLfk4HTUtkd+YBTM7BRZ8iTbUbC3Pnkx1k78TUCV9A5YrDoEmXIl5f4RR8j+KW36HxbfnEtqZAYJYDMVcNPYuiCd23hIWfa5kMKa6JANghoU3122iUX51AUOQ3xqnRggNDysmOgwG+eZh2Z3glufIjDKPf6tLvqHRKwMSJmInHVSkI6KMJJftyzz7glD96VxGDfoI9G/H1uIx49/qw/H9ILXIm5nRmxIyiShq9K6D7Tvzee0s1fYTN6JVHyYLyvK6vbRbHFWHwIDAQAB",
   "permissions": ["storage"],
   "background": {
     "service_worker": "dist/background.js"
@@ -10,24 +11,26 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
+      "all_frames": true,
+      "match_about_blank": true,
       "js": ["dist/content-script.js"],
       "run_at": "document_idle"
     }
   ],
   "action": {
     "default_popup": "dist/popup/popup.html",
-    "default_title": "Slash-Prompt Expander",
+    "default_title": "Slash-Text Paste",
     "default_icon": {
-      "16": "icons/icon-16.png",
-      "32": "icons/icon-32.png",
-      "48": "icons/icon-48.png",
-      "128": "icons/icon-128.png"
+      "16": "dist/icons/icon-16.png",
+      "32": "dist/icons/icon-32.png",
+      "48": "dist/icons/icon-48.png",
+      "128": "dist/icons/icon-128.png"
     }
   },
   "icons": {
-    "16": "icons/icon-16.png",
-    "32": "icons/icon-32.png",
-    "48": "icons/icon-48.png",
-    "128": "icons/icon-128.png"
+    "16": "dist/icons/icon-16.png",
+    "32": "dist/icons/icon-32.png",
+    "48": "dist/icons/icon-48.png",
+    "128": "dist/icons/icon-128.png"
   }
 }
