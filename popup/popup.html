@@ -7,22 +7,23 @@
 <body>
   <div class="container">
     <header class="header">
-      <h1>Slash-Text Expander</h1>
-      <p class="subtitle">Manage your text shortcuts</p>
+      <h1>PastePal</h1>
+      <p class="subtitle">Save shortcuts. Paste instantly.</p>
     </header>
 
     <div class="add-section">
       <div class="input-group">
-        <label for="alias-input">Alias</label>
+        <label for="alias-input">Shortcut</label>
         <div class="alias-input-wrapper">
           <span class="slash">/</span>
           <input type="text" id="alias-input" placeholder="demo" maxlength="50">
         </div>
+        <div class="helper">Type /&lt;shortcut&gt; then press Tab to paste.</div>
       </div>
       
       <div class="input-group">
-        <label for="text-input">Expansion Text</label>
-        <textarea id="text-input" placeholder="Enter the text to expand to..." rows="3"></textarea>
+        <label for="text-input">Text to Paste</label>
+        <textarea id="text-input" placeholder="Enter the text to paste…" rows="3"></textarea>
       </div>
       
       <div class="button-group">
@@ -39,6 +40,6 @@
     </div>
   </div>
 
-  <script src="../dist/popup.js"></script>
+  <script src="../popup.js"></script>
 </body>
 </html>

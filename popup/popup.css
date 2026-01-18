@@ -60,6 +60,13 @@ label {
   margin-bottom: 6px;
 }
 
+.helper {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #787774;
+  font-style: italic;
+}
+
 .alias-input-wrapper {
   position: relative;
   display: flex;

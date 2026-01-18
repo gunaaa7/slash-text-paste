@@ -63,26 +63,37 @@ if (fs.existsSync(manifestSrc)) {
   console.log("Rewrote and copied manifest.json -> dist/manifest.json")
 }
 
-// Create icons directory and placeholder icon
+// Create icons directory and copy icon assets (fallback to placeholder if missing)
 const iconsDir = path.join(__dirname, "dist", "icons")
 if (!fs.existsSync(iconsDir)) {
   fs.mkdirSync(iconsDir, { recursive: true })
 }
 
-// Create a simple SVG icon and convert to different sizes
-const iconSvg = `<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+const sourceIconsDir = path.join(__dirname, "icons")
+const iconSizes = [16, 32, 48, 128]
+const hasSourceIcons =
+  fs.existsSync(sourceIconsDir) &&
+  iconSizes.every((size) => fs.existsSync(path.join(sourceIconsDir, `icon-${size}.png`)))
+
+if (hasSourceIcons) {
+  iconSizes.forEach((size) => {
+    const fromPath = path.join(sourceIconsDir, `icon-${size}.png`)
+    const toPath = path.join(iconsDir, `icon-${size}.png`)
+    fs.copyFileSync(fromPath, toPath)
+  })
+  console.log("Copied icons -> dist/icons")
+} else {
+  // Placeholder icons when no source assets exist
+  const iconSvg = `<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
   <rect width="128" height="128" rx="20" fill="#2383e2"/>
   <text x="64" y="80" font-family="Arial, sans-serif" font-size="60" font-weight="bold" text-anchor="middle" fill="white">/</text>
 </svg>`
-
-// For simplicity, we'll create a basic PNG placeholder
-// In a real project, you'd use a proper image conversion tool
-const iconSizes = [16, 32, 48, 128]
-iconSizes.forEach((size) => {
-  const iconPath = path.join(iconsDir, `icon-${size}.png`)
-  // Create a simple text file as placeholder - in real usage, convert SVG to PNG
-  fs.writeFileSync(iconPath, iconSvg)
-})
+  iconSizes.forEach((size) => {
+    const iconPath = path.join(iconsDir, `icon-${size}.png`)
+    fs.writeFileSync(iconPath, iconSvg)
+  })
+  console.log("Generated placeholder icons -> dist/icons")
+}
 
 // Build TypeScript files
 const buildOptions = {
