@@ -1,38 +1,38 @@
-// Popup UI for managing aliases
+// Popup UI for managing shortcuts
 
-interface Alias {
-  alias: string
+interface Shortcut {
+  shortcut: string
   text: string
 }
 
 class PopupManager {
-  private aliasInput: HTMLInputElement
+  private shortcutInput: HTMLInputElement
   private textInput: HTMLTextAreaElement
   private saveBtn: HTMLButtonElement
   private cancelBtn: HTMLButtonElement
-  private aliasesList: HTMLElement
-  private editingAlias: string | null = null
+  private shortcutsList: HTMLElement
+  private editingShortcut: string | null = null
 
   constructor() {
-    this.aliasInput = document.getElementById("alias-input") as HTMLInputElement
+    this.shortcutInput = document.getElementById("shortcut-input") as HTMLInputElement
     this.textInput = document.getElementById("text-input") as HTMLTextAreaElement
     this.saveBtn = document.getElementById("save-btn") as HTMLButtonElement
     this.cancelBtn = document.getElementById("cancel-btn") as HTMLButtonElement
-    this.aliasesList = document.getElementById("aliases-list") as HTMLElement
+    this.shortcutsList = document.getElementById("shortcuts-list") as HTMLElement
 
     this.initializeEventListeners()
-    this.loadAliases()
+    this.loadShortcuts()
   }
 
   private initializeEventListeners(): void {
     this.saveBtn.addEventListener("click", () => this.handleSave())
     this.cancelBtn.addEventListener("click", () => this.handleCancel())
 
-    this.aliasInput.addEventListener("input", () => this.validateForm())
+    this.shortcutInput.addEventListener("input", () => this.validateForm())
     this.textInput.addEventListener("input", () => this.validateForm())
 
     // Handle Enter key in inputs
-    this.aliasInput.addEventListener("keydown", (e) => {
+    this.shortcutInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault()
         this.textInput.focus()
@@ -48,16 +48,16 @@ class PopupManager {
   }
 
   private validateForm(): void {
-    const alias = this.aliasInput.value.trim()
+    const shortcut = this.shortcutInput.value.trim()
     const text = this.textInput.value.trim()
-    const isValid = alias.length > 0 && text.length > 0 && /^[A-Za-z]+$/.test(alias)
+    const isValid = shortcut.length > 0 && text.length > 0 && /^[A-Za-z]+$/.test(shortcut)
 
     this.saveBtn.disabled = !isValid
 
     // Show validation error
     this.clearError()
-    if (alias.length > 0 && !/^[A-Za-z]+$/.test(alias)) {
-      this.showError("Alias must contain only letters")
+    if (shortcut.length > 0 && !/^[A-Za-z]+$/.test(shortcut)) {
+      this.showError("Shortcut must contain only letters")
     }
   }
 
@@ -66,7 +66,7 @@ class PopupManager {
     const error = document.createElement("div")
     error.className = "error"
     error.textContent = message
-    this.aliasInput.parentNode?.appendChild(error)
+    this.shortcutInput.parentNode?.appendChild(error)
   }
 
   private clearError(): void {
@@ -77,32 +77,32 @@ class PopupManager {
   }
 
   private async handleSave(): Promise<void> {
-    const alias = this.aliasInput.value.trim().toLowerCase()
+    const shortcut = this.shortcutInput.value.trim().toLowerCase()
     const text = this.textInput.value.trim()
 
-    if (!alias || !text || !/^[A-Za-z]+$/.test(alias)) {
+    if (!shortcut || !text || !/^[A-Za-z]+$/.test(shortcut)) {
       return
     }
 
     try {
       await chrome.runtime.sendMessage({
-        type: "SAVE_ALIAS",
-        alias,
+        type: "SAVE_SHORTCUT",
+        shortcut,
         text,
       })
 
-      if (this.editingAlias && this.editingAlias !== alias) {
+      if (this.editingShortcut && this.editingShortcut !== shortcut) {
         await chrome.runtime.sendMessage({
-          type: "DELETE_ALIAS",
-          alias: this.editingAlias,
+          type: "DELETE_SHORTCUT",
+          shortcut: this.editingShortcut,
         })
       }
 
       this.clearForm()
-      this.loadAliases()
+      this.loadShortcuts()
     } catch (error) {
-      console.error("Failed to save alias:", error)
-      this.showError("Failed to save alias")
+      console.error("Failed to save shortcut:", error)
+      this.showError("Failed to save shortcut")
     }
   }
 
@@ -111,71 +111,73 @@ class PopupManager {
   }
 
   private clearForm(): void {
-    this.aliasInput.value = ""
+    this.shortcutInput.value = ""
     this.textInput.value = ""
-    this.editingAlias = null
-    this.saveBtn.textContent = "Save Alias"
+    this.editingShortcut = null
+    this.saveBtn.textContent = "Save Shortcut"
     this.cancelBtn.style.display = "none"
     this.validateForm()
     this.clearError()
   }
 
-  private async loadAliases(): Promise<void> {
+  private async loadShortcuts(): Promise<void> {
     try {
-      const aliases = await chrome.runtime.sendMessage({ type: "GET_ALIASES" })
-      this.renderAliases(aliases)
+      const shortcuts = await chrome.runtime.sendMessage({ type: "GET_SHORTCUTS" })
+      this.renderShortcuts(shortcuts)
     } catch (error) {
-      console.error("Failed to load aliases:", error)
-      this.aliasesList.innerHTML = '<div class="error">Failed to load aliases</div>'
+      console.error("Failed to load shortcuts:", error)
+      this.shortcutsList.innerHTML = '<div class="error">Failed to load shortcuts</div>'
     }
   }
 
-  private renderAliases(aliases: Record<string, string>): void {
-    const aliasEntries = Object.entries(aliases)
+  private renderShortcuts(shortcuts: Record<string, string>): void {
+    const shortcutEntries = Object.entries(shortcuts)
 
-    if (aliasEntries.length === 0) {
-      this.aliasesList.innerHTML = `
+    if (shortcutEntries.length === 0) {
+      this.shortcutsList.innerHTML = `
         <div class="empty-state">
-          No aliases saved yet.<br>
-          Create your first alias above!
+          No shortcuts saved yet.<br>
+          Create your first shortcut above!
         </div>
       `
       return
     }
 
-    // Sort aliases alphabetically
-    aliasEntries.sort(([a], [b]) => a.localeCompare(b))
+    // Sort shortcuts alphabetically
+    shortcutEntries.sort(([a], [b]) => a.localeCompare(b))
 
-    this.aliasesList.innerHTML = aliasEntries.map(([alias, text]) => this.renderAliasItem(alias, text)).join("")
+    this.shortcutsList.innerHTML = shortcutEntries
+      .map(([shortcut, text]) => this.renderShortcutItem(shortcut, text))
+      .join("")
 
     // Add event listeners to buttons
-    this.aliasesList.querySelectorAll(".btn-edit").forEach((btn) => {
+    this.shortcutsList.querySelectorAll(".btn-edit").forEach((btn) => {
       btn.addEventListener("click", (e) => {
-        const alias = (e.target as HTMLElement).dataset.alias!
-        this.editAlias(alias, aliases[alias])
+        const shortcut = (e.target as HTMLElement).dataset.shortcut!
+        this.editShortcut(shortcut, shortcuts[shortcut])
       })
     })
 
-    this.aliasesList.querySelectorAll(".btn-delete").forEach((btn) => {
+    this.shortcutsList.querySelectorAll(".btn-delete").forEach((btn) => {
       btn.addEventListener("click", (e) => {
-        const alias = (e.target as HTMLElement).dataset.alias!
-        this.deleteAlias(alias)
+        const shortcut = (e.target as HTMLElement).dataset.shortcut!
+        this.deleteShortcut(shortcut)
       })
     })
   }
 
-  private renderAliasItem(alias: string, text: string): string {
+  private renderShortcutItem(shortcut: string, text: string): string {
     const truncatedText = text.length > 100 ? text.substring(0, 100) + "..." : text
 
     return `
       <div class="alias-item">
         <div class="alias-content">
-          <div class="alias-name">/${alias}</div>
+          <div class="alias-name">/${shortcut}</div>
           <div class="alias-text">${this.escapeHtml(truncatedText)}</div>
         </div>
         <div class="alias-actions">
-          <button class="btn btn-small btn-edit" data-alias="${alias}">Edit</button>
-          <button class="btn btn-small btn-delete" data-alias="${alias}">Delete</button>
+          <button class="btn btn-small btn-edit" data-shortcut="${shortcut}">Edit</button>
+          <button class="btn btn-small btn-delete" data-shortcut="${shortcut}">Delete</button>
         </div>
       </div>
     `
@@ -187,35 +189,35 @@ class PopupManager {
     return div.innerHTML
   }
 
-  private editAlias(alias: string, text: string): void {
-    this.aliasInput.value = alias
+  private editShortcut(shortcut: string, text: string): void {
+    this.shortcutInput.value = shortcut
     this.textInput.value = text
-    this.editingAlias = alias
-    this.saveBtn.textContent = "Update Alias"
+    this.editingShortcut = shortcut
+    this.saveBtn.textContent = "Update Shortcut"
     this.cancelBtn.style.display = "inline-block"
     this.validateForm()
-    this.aliasInput.focus()
+    this.shortcutInput.focus()
   }
 
-  private async deleteAlias(alias: string): Promise<void> {
-    if (!confirm(`Delete alias "/${alias}"?`)) {
+  private async deleteShortcut(shortcut: string): Promise<void> {
+    if (!confirm(`Delete shortcut "/${shortcut}"?`)) {
       return
     }
 
     try {
       await chrome.runtime.sendMessage({
-        type: "DELETE_ALIAS",
-        alias,
+        type: "DELETE_SHORTCUT",
+        shortcut,
       })
 
-      // Clear form if we were editing this alias
-      if (this.editingAlias === alias) {
+      // Clear form if we were editing this shortcut
+      if (this.editingShortcut === shortcut) {
         this.clearForm()
       }
 
-      this.loadAliases()
+      this.loadShortcuts()
     } catch (error) {
-      console.error("Failed to delete alias:", error)
+      console.error("Failed to delete shortcut:", error)
     }
   }
 }

@@ -1,77 +1,78 @@
 // Background service worker for handling storage operations and messages
 
-interface Alias {
-  alias: string
-  text: string
-}
-
-interface StorageData {
-  aliases: Record<string, string>
-}
-
 // Message types
 interface ExpandMessage {
   type: "EXPAND"
-  alias: string
+  shortcut: string
 }
 
-interface GetAliasesMessage {
-  type: "GET_ALIASES"
+interface GetShortcutsMessage {
+  type: "GET_SHORTCUTS"
 }
 
-interface SaveAliasMessage {
-  type: "SAVE_ALIAS"
-  alias: string
+interface SaveShortcutMessage {
+  type: "SAVE_SHORTCUT"
+  shortcut: string
   text: string
 }
 
-interface DeleteAliasMessage {
-  type: "DELETE_ALIAS"
-  alias: string
+interface DeleteShortcutMessage {
+  type: "DELETE_SHORTCUT"
+  shortcut: string
 }
 
-type Message = ExpandMessage | GetAliasesMessage | SaveAliasMessage | DeleteAliasMessage
+type Message = ExpandMessage | GetShortcutsMessage | SaveShortcutMessage | DeleteShortcutMessage
 
 // Storage helpers
-async function getAliases(): Promise<Record<string, string>> {
-  const result = await chrome.storage.sync.get(["aliases"])
-  return result.aliases || {}
+async function getShortcuts(): Promise<Record<string, string>> {
+  const result = await chrome.storage.sync.get(["shortcuts", "aliases"])
+  if (result.shortcuts) {
+    return result.shortcuts
+  }
+
+  if (result.aliases) {
+    await chrome.storage.sync.set({ shortcuts: result.aliases })
+    await chrome.storage.sync.remove(["aliases"])
+    return result.aliases
+  }
+
+  return {}
 }
 
-async function saveAlias(alias: string, text: string): Promise<void> {
-  const aliases = await getAliases()
-  aliases[alias.toLowerCase()] = text
-  await chrome.storage.sync.set({ aliases })
+async function saveShortcut(shortcut: string, text: string): Promise<void> {
+  const shortcuts = await getShortcuts()
+  shortcuts[shortcut.toLowerCase()] = text
+  await chrome.storage.sync.set({ shortcuts })
 }
 
-async function deleteAlias(alias: string): Promise<void> {
-  const aliases = await getAliases()
-  delete aliases[alias.toLowerCase()]
-  await chrome.storage.sync.set({ aliases })
+async function deleteShortcut(shortcut: string): Promise<void> {
+  const shortcuts = await getShortcuts()
+  delete shortcuts[shortcut.toLowerCase()]
+  await chrome.storage.sync.set({ shortcuts })
 }
 
-async function expandAlias(alias: string): Promise<string | null> {
-  const aliases = await getAliases()
-  return aliases[alias.toLowerCase()] || null
+async function expandShortcut(shortcut: string): Promise<string | null> {
+  const shortcuts = await getShortcuts()
+  return shortcuts[shortcut.toLowerCase()] || null
 }
 
 // Message handler
 chrome.runtime.onMessage.addListener((message: Message, sender, sendResponse) => {
   switch (message.type) {
     case "EXPAND":
-      expandAlias(message.alias).then(sendResponse)
+      expandShortcut(message.shortcut).then(sendResponse)
       return true // Keep message channel open for async response
 
-    case "GET_ALIASES":
-      getAliases().then(sendResponse)
+    case "GET_SHORTCUTS":
+      getShortcuts().then(sendResponse)
       return true
 
-    case "SAVE_ALIAS":
-      saveAlias(message.alias, message.text).then(() => sendResponse(true))
+    case "SAVE_SHORTCUT":
+      saveShortcut(message.shortcut, message.text).then(() => sendResponse(true))
       return true
 
-    case "DELETE_ALIAS":
-      deleteAlias(message.alias).then(() => sendResponse(true))
+    case "DELETE_SHORTCUT":
+      deleteShortcut(message.shortcut).then(() => sendResponse(true))
       return true
 
     default:
@@ -81,13 +82,19 @@ chrome.runtime.onMessage.addListener((message: Message, sender, sendResponse) =>
 
 // Initialize storage on install
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.sync.get(["aliases"], (result) => {
-    if (!result.aliases) {
-      chrome.storage.sync.set({
-        aliases: {
-          demo: "This is a demo expansion text! 🚀",
-        },
+  chrome.storage.sync.get(["shortcuts", "aliases"], (result) => {
+    if (result.shortcuts) return
+    if (result.aliases) {
+      chrome.storage.sync.set({ shortcuts: result.aliases }, () => {
+        chrome.storage.sync.remove(["aliases"])
       })
+      return
     }
+
+    chrome.storage.sync.set({
+      shortcuts: {
+        demo: "This is a demo expansion text! dYs?",
+      },
+    })
   })
 })

@@ -4,31 +4,37 @@ interface ExpansionState {
   element: HTMLElement
   originalText: string
   cursorPosition: number
-  aliasStart: number
-  aliasEnd: number
+  shortcutStart: number
+  shortcutEnd: number
 }
 
 let lastExpansion: ExpansionState | null = null
-let aliasesCache: Record<string, string> = {}
+let shortcutsCache: Record<string, string> = {}
 let recentTextBuffer = ""
 let recentTextElement: HTMLElement | null = null
 const maxBufferLength = 200
 
-async function loadAliasesCache(): Promise<void> {
+async function loadShortcutsCache(): Promise<void> {
   try {
-    const result = await chrome.storage.sync.get(["aliases"])
-    aliasesCache = result.aliases || {}
+    const result = await chrome.storage.sync.get(["shortcuts", "aliases"])
+    if (result.shortcuts) {
+      shortcutsCache = result.shortcuts
+    } else if (result.aliases) {
+      shortcutsCache = result.aliases
+    } else {
+      shortcutsCache = {}
+    }
   } catch (error) {
-    console.error("Failed to load aliases cache:", error)
+    console.error("Failed to load shortcuts cache:", error)
   }
 }
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
-  if (areaName !== "sync" || !changes.aliases) return
-  aliasesCache = changes.aliases.newValue || {}
+  if (areaName !== "sync" || !changes.shortcuts) return
+  shortcutsCache = changes.shortcuts.newValue || {}
 })
 
-loadAliasesCache()
+loadShortcutsCache()
 
 // Check if element should be excluded from expansion
 function isExcludedElement(element: HTMLElement): boolean {
@@ -117,7 +123,7 @@ function setTextAndCursor(element: HTMLElement, text: string, cursor: number): v
       try {
         input.setSelectionRange(cursor, cursor)
       } catch (error) {
-        console.debug("[slash-expander] selection not supported for input type", (input as HTMLInputElement).type)
+        console.debug("[PastePal] selection not supported for input type", (input as HTMLInputElement).type)
       }
     }
   } else {
@@ -155,17 +161,17 @@ function setTextAndCursor(element: HTMLElement, text: string, cursor: number): v
   }
 }
 
-// Extract alias from text at cursor position
-function extractAlias(text: string, cursorPos: number): { alias: string; start: number; end: number } | null {
-  // Look backwards from cursor to find /alias pattern
+// Extract shortcut from text at cursor position
+function extractShortcut(text: string, cursorPos: number): { shortcut: string; start: number; end: number } | null {
+  // Look backwards from cursor to find /shortcut pattern
   const beforeCursor = text.substring(0, cursorPos)
   const match = /(^|\s)\/([A-Za-z]+)$/.exec(beforeCursor)
 
   if (match) {
-    const alias = match[2]
+    const shortcut = match[2]
     const start = (match.index ?? 0) + match[1].length
     const end = cursorPos
-    return { alias, start, end }
+    return { shortcut, start, end }
   }
 
   return null
@@ -253,11 +259,11 @@ function handleSelectionChange(): void {
   }
 }
 
-async function expandAliasFromSelection(alias: string, aliasLength: number): Promise<boolean> {
+async function expandShortcutFromSelection(shortcut: string, shortcutLength: number): Promise<boolean> {
   try {
     const expandedText = await chrome.runtime.sendMessage({
       type: "EXPAND",
-      alias,
+      shortcut,
     })
 
     if (!expandedText) {
@@ -268,14 +274,14 @@ async function expandAliasFromSelection(alias: string, aliasLength: number): Pro
     if (!selection) return false
 
     if (typeof selection.modify === "function") {
-      for (let i = 0; i < aliasLength; i += 1) {
+      for (let i = 0; i < shortcutLength; i += 1) {
         selection.modify("extend", "backward", "character")
       }
       document.execCommand("insertText", false, expandedText)
       return true
     }
   } catch (error) {
-    console.error("Failed to expand alias:", error)
+    console.error("Failed to expand shortcut:", error)
   }
 
   return false
@@ -284,14 +290,14 @@ async function expandAliasFromSelection(alias: string, aliasLength: number): Pro
 // Handle Tab key for expansion
 async function handleTabExpansion(element: HTMLElement): Promise<boolean> {
   const { text, cursor } = getTextAndCursor(element)
-  const aliasMatch = extractAlias(text, cursor)
+  const shortcutMatch = extractShortcut(text, cursor)
 
-  if (!aliasMatch) return false
+  if (!shortcutMatch) return false
 
   try {
     const expandedText = await chrome.runtime.sendMessage({
       type: "EXPAND",
-      alias: aliasMatch.alias,
+      shortcut: shortcutMatch.shortcut,
     })
 
     if (expandedText) {
@@ -300,22 +306,22 @@ async function handleTabExpansion(element: HTMLElement): Promise<boolean> {
         element,
         originalText: text,
         cursorPosition: cursor,
-        aliasStart: aliasMatch.start,
-        aliasEnd: aliasMatch.end,
+        shortcutStart: shortcutMatch.start,
+        shortcutEnd: shortcutMatch.end,
       }
 
-      // Replace alias with expanded text
-      const newText = text.substring(0, aliasMatch.start) + expandedText + text.substring(aliasMatch.end)
-      const newCursor = aliasMatch.start + expandedText.length
+      // Replace shortcut with expanded text
+      const newText = text.substring(0, shortcutMatch.start) + expandedText + text.substring(shortcutMatch.end)
+      const newCursor = shortcutMatch.start + expandedText.length
 
       setTextAndCursor(element, newText, newCursor)
-      showToast(`Expanded '/${aliasMatch.alias}'`)
+      showToast(`Pasted '/${shortcutMatch.shortcut}'`)
 
       return true
     }
-    console.info("[slash-expander] no expansion found for", aliasMatch.alias)
+    console.info("[PastePal] no expansion found for", shortcutMatch.shortcut)
   } catch (error) {
-    console.error("Failed to expand alias:", error)
+    console.error("Failed to expand shortcut:", error)
   }
 
   return false
@@ -373,28 +379,28 @@ function handleKeyDown(event: KeyboardEvent): void {
   // Handle Tab key for expansion
   if (event.key === "Tab" && !event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey) {
     const { text, cursor } = getTextAndCursor(target)
-    let aliasMatch = extractAlias(text, cursor)
+    let shortcutMatch = extractShortcut(text, cursor)
     let fromBuffer = false
 
-    if (!aliasMatch && target.isContentEditable && recentTextElement === target && recentTextBuffer.length > 0) {
-      aliasMatch = extractAlias(recentTextBuffer, recentTextBuffer.length)
-      fromBuffer = Boolean(aliasMatch)
+    if (!shortcutMatch && target.isContentEditable && recentTextElement === target && recentTextBuffer.length > 0) {
+      shortcutMatch = extractShortcut(recentTextBuffer, recentTextBuffer.length)
+      fromBuffer = Boolean(shortcutMatch)
     }
 
-    if (!aliasMatch) return
+    if (!shortcutMatch) return
 
-    const cachedText = aliasesCache[aliasMatch.alias.toLowerCase()]
+    const cachedText = shortcutsCache[shortcutMatch.shortcut.toLowerCase()]
     if (!cachedText) return
 
     // Prevent focus from moving before async expansion completes.
     event.preventDefault()
     if (fromBuffer) {
-      expandAliasFromSelection(aliasMatch.alias, aliasMatch.end - aliasMatch.start).catch((error) => {
-        console.error("Failed to expand alias:", error)
+      expandShortcutFromSelection(shortcutMatch.shortcut, shortcutMatch.end - shortcutMatch.start).catch((error) => {
+        console.error("Failed to expand shortcut:", error)
       })
     } else {
       handleTabExpansion(target).catch((error) => {
-        console.error("Failed to expand alias:", error)
+        console.error("Failed to expand shortcut:", error)
       })
     }
   }

@@ -3,7 +3,6 @@
   "name": "PastePal",
   "version": "1.0.0",
   "description": "Paste saved text instantly using shortcuts.",
-  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7spAsxc4820x6b8v1DwlLSfe+EqzVqgsR5zLrzL6mods6gExkzwmbsgL4Ke3wlEzGzzz+r88BhxVHLfk4HTUtkd+YBTM7BRZ8iTbUbC3Pnkx1k78TUCV9A5YrDoEmXIl5f4RR8j+KW36HxbfnEtqZAYJYDMVcNPYuiCd23hIWfa5kMKa6JANghoU3122iUX51AUOQ3xqnRggNDysmOgwG+eZh2Z3glufIjDKPf6tLvqHRKwMSJmInHVSkI6KMJJftyzz7glD96VxGDfoI9G/H1uIx49/qw/H9ILXIm5nRmxIyiShq9K6D7Tvzee0s1fYTN6JVHyYLyvK6vbRbHFWHwIDAQAB",
   "permissions": ["storage"],
   "background": {
     "service_worker": "dist/background.js"

@@ -1,54 +1,66 @@
-# Slash-Text Paste
+# PastePal
 
-A Chrome extension that expands `/alias` shortcuts to saved text snippets in any editable field.
+A Chrome extension to paste saved text instantly using shortcuts.
+
+Type `/shortcut` and press **Tab** to replace it with your saved text in any editable field.
+
+![PastePal Demo](PastePal%20-%20Demo.gif)
+
+---
+
+## Screenshots
+
+> Add 2–4 screenshots here (popup + a demo in a text box):
+- Popup: managing shortcuts
+- Before: typing `/meeting`
+- After: expanded/pasted text
+- Optional: toast confirmation
+
+(Place images in `/assets` and link like: `![Popup](assets/popup.png)`)
+
+---
 
 ## Features
 
-- 🚀 **Quick Expansion**: Type `/alias` + Tab to expand to saved text
-- 📝 **Universal**: Works in any editable field (Gmail, Twitter, forms, etc.)
-- 🔒 **Smart Exclusions**: Automatically excludes password and payment fields
-- ↩️ **Undo Support**: Ctrl+Z to restore original `/alias` text
-- 🎯 **Simple Management**: Clean popup interface for CRUD operations
-- 💾 **Sync Storage**: Aliases sync across your Chrome browsers
+- ⚡ **Instant paste**: Type `/shortcut` + Tab to paste saved text
+- 🧩 **Works everywhere**: Any editable field across websites
+- 🔒 **Safe by default**: Excludes password and sensitive payment fields
+- ↩️ **Undo support**: `Ctrl+Z` restores the original `/shortcut`
+- 🗂️ **Simple management**: Popup UI to add/edit/delete shortcuts
+- 💾 **Sync storage**: Shortcuts sync via Chrome Storage Sync (when signed in)
 
-## Installation
+---
 
-### Development Setup
+## Install (Local / Development)
 
-1. **Clone and build the extension:**
+1. **Clone and build**
    ```bash
    git clone <repository-url>
-   cd slash-text-paste
+   cd pastepal
    npm install
    npm run build
-   ```
 
 2. **Load the extension in Chrome:**
-   - Open Chrome and navigate to `chrome://extensions/`
-   - Enable "Developer mode" (toggle in top right)
-   - Click "Load unpacked"
-   - Select the `dist` folder from this project
+   - Open chrome://extensions/
+   - Enable Developer mode
+   - Click Load unpacked
+   - Select the dist/ folder from this project
 
-3. **Verify installation:**
-   - You should see the extension icon in your toolbar
-   - Click the icon to open the popup and manage aliases
+3. **Update after changes:**
+   - Run npm run build
+   - Go to chrome://extensions/ and click Reload on PastePal
+   - Refresh the page you’re testing
 
 ### Usage
-
-1. **Create an alias:**
-   - Click the extension icon
-   - Enter an alias name (letters only, e.g., "demo")
-   - Enter the expansion text
-   - Click "Save Alias"
-
-2. **Use the alias:**
-   - Go to any website with text input (Gmail, Twitter, etc.)
-   - Type `/demo` (or your alias)
+1. Open the PastePal popup
+2. Enter a Shortcut (letters only, e.g. meeting)
+3. Enter Text to Paste
+4. Save
+Then in any text input:
+   - Type /meeting
    - Press Tab
-   - The alias expands to your saved text with a confirmation toast
-
-3. **Undo expansion:**
-   - Press Ctrl+Z immediately after expansion to restore `/alias`
+   - PastePal replaces it with your saved text
+**Undo**: Press Ctrl+Z immediately after pasting.
 
 ## Development
 
@@ -60,9 +72,6 @@ npm run build
 
 # Build and watch for changes
 npm run dev
-
-# Run tests
-npm test
 ```
 
 ### Project Structure
@@ -72,7 +81,6 @@ npm test
 │   ├── background.ts      # Service worker for storage operations
 │   ├── content-script.ts  # Text expansion logic
 │   ├── popup.ts          # Popup UI management
-│   └── __tests__/        # Unit tests
 ├── popup/
 │   ├── popup.html        # Popup interface
 │   └── popup.css         # Styling
@@ -80,60 +88,8 @@ npm test
 └── build.js             # Build script
 ```
 
-### Technical Details
-
-- **Manifest V3** service worker architecture
-- **TypeScript** for type safety and better development experience
-- **Chrome Storage Sync** for cross-device alias synchronization
-- **Content Script** injection for universal text field support
-- **Smart field detection** to exclude sensitive inputs
-
-### Testing
-
-The extension includes unit tests for core functionality:
-
-```bash
-npm test
-```
-
-Tests cover:
-- Alias regex pattern matching
-- Edge cases and validation
-- Case sensitivity handling
-
 ## Security & Privacy
 
 - **Local Storage**: All aliases are stored locally in Chrome's sync storage
 - **No Network Requests**: Extension works entirely offline
-- **Smart Exclusions**: Automatically excludes password and payment fields
-- **Minimal Permissions**: Only requests necessary storage permissions
-
-## Troubleshooting
-
-### Extension not working?
-1. Check that the extension is enabled in `chrome://extensions/`
-2. Refresh the page you're testing on
-3. Verify the field is editable and not excluded (password/payment)
-
-### Aliases not syncing?
-1. Ensure you're signed into Chrome
-2. Check Chrome sync settings
-3. Try disabling/re-enabling the extension
-
-### Build issues?
-1. Ensure Node.js 16+ is installed
-2. Delete `node_modules` and run `npm install` again
-3. Check that TypeScript compiles without errors
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Run `npm test` and `npm run build`
-6. Submit a pull request
-
-## License
-
-MIT License - see LICENSE file for details.
+- **Smart Exclusions**: Automatically excludes password and sensitive fields

@@ -1,35 +1,35 @@
-// Unit test for alias extraction regex
+// Unit test for shortcut extraction regex
 
-describe("Alias Regex", () => {
-  const aliasRegex = /\/([A-Za-z]+)$/
+describe("Shortcut Regex", () => {
+  const shortcutRegex = /\/([A-Za-z]+)$/
 
-  test("should match valid aliases at end of string", () => {
-    expect("Hello /demo".match(aliasRegex)).toBeTruthy()
-    expect("Type /test".match(aliasRegex)?.[1]).toBe("test")
-    expect("/alias".match(aliasRegex)?.[1]).toBe("alias")
+  test("should match valid shortcuts at end of string", () => {
+    expect("Hello /demo".match(shortcutRegex)).toBeTruthy()
+    expect("Type /test".match(shortcutRegex)?.[1]).toBe("test")
+    expect("/shortcut".match(shortcutRegex)?.[1]).toBe("shortcut")
   })
 
-  test("should not match invalid aliases", () => {
-    expect("Hello /demo123".match(aliasRegex)).toBeFalsy()
-    expect("Hello /demo-test".match(aliasRegex)).toBeFalsy()
-    expect("Hello /demo_test".match(aliasRegex)).toBeFalsy()
-    expect("Hello /123".match(aliasRegex)).toBeFalsy()
+  test("should not match invalid shortcuts", () => {
+    expect("Hello /demo123".match(shortcutRegex)).toBeFalsy()
+    expect("Hello /demo-test".match(shortcutRegex)).toBeFalsy()
+    expect("Hello /demo_test".match(shortcutRegex)).toBeFalsy()
+    expect("Hello /123".match(shortcutRegex)).toBeFalsy()
   })
 
-  test("should not match aliases not at end of string", () => {
-    expect("Hello /demo world".match(aliasRegex)).toBeFalsy()
-    expect("/demo test".match(aliasRegex)).toBeFalsy()
+  test("should not match shortcuts not at end of string", () => {
+    expect("Hello /demo world".match(shortcutRegex)).toBeFalsy()
+    expect("/demo test".match(shortcutRegex)).toBeFalsy()
   })
 
-  test("should match case-insensitive aliases", () => {
-    expect("/Demo".match(aliasRegex)?.[1]).toBe("Demo")
-    expect("/DEMO".match(aliasRegex)?.[1]).toBe("DEMO")
-    expect("/dEmO".match(aliasRegex)?.[1]).toBe("dEmO")
+  test("should match case-insensitive shortcuts", () => {
+    expect("/Demo".match(shortcutRegex)?.[1]).toBe("Demo")
+    expect("/DEMO".match(shortcutRegex)?.[1]).toBe("DEMO")
+    expect("/dEmO".match(shortcutRegex)?.[1]).toBe("dEmO")
   })
 
   test("should handle empty and edge cases", () => {
-    expect("".match(aliasRegex)).toBeFalsy()
-    expect("/".match(aliasRegex)).toBeFalsy()
-    expect("Hello /".match(aliasRegex)).toBeFalsy()
+    expect("".match(shortcutRegex)).toBeFalsy()
+    expect("/".match(shortcutRegex)).toBeFalsy()
+    expect("Hello /".match(shortcutRegex)).toBeFalsy()
   })
 })
