@@ -7,19 +7,6 @@ Type `/shortcut` and press **Tab** to replace it with your saved text in any edi
 ![PastePal Demo](PastePal%20-%20Demo.gif)
 
 ---
-
-## Screenshots
-
-> Add 2–4 screenshots here (popup + a demo in a text box):
-- Popup: managing shortcuts
-- Before: typing `/meeting`
-- After: expanded/pasted text
-- Optional: toast confirmation
-
-(Place images in `/assets` and link like: `![Popup](assets/popup.png)`)
-
----
-
 ## Features
 
 - ⚡ **Instant paste**: Type `/shortcut` + Tab to paste saved text
